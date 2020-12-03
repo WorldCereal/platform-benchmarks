@@ -34,3 +34,58 @@ may not support the object storage interface.
 ### Possible improvements
 - Run benchmark multiple times?
 - GDAL tuning to improve object storage results?
+
+## Sentinel-2 Reading
+
+For Sentinel-2 reading, these are important parameters:
+- Kakadu vs open source JPEG2000
+- Object storage vs mounted object storage
+- Kakadu allows configuring a number of threads
+
+```
+root@openeo-geotrellis-driver:/opt/spark/work-dir# time CPL_DEBUG=OFF gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /vsis3/eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out.tif
+Input file size is 10980, 10980
+0...10...20...30...40...50...60...70...80...90...100 - done.
+
+real    1m11.969s
+user    0m41.652s
+sys     0m1.352s
+
+
+root@openeo-geotrellis-driver:/opt/spark/work-dir# time CPL_DEBUG=OFF gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out.tif
+Input file size is 10980, 10980
+0...10...20...30...40...50...60...70...80...90...100 - done.
+
+real    0m23.439s
+user    0m38.565s
+sys     0m0.949s
+
+##check if number of threads is important
+root@openeo-geotrellis-driver:/opt/spark/work-dir# time JP2KAK_THREADS=4 CPL_DEBUG=OFF gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out.tif
+Input file size is 10980, 10980
+0...10...20...30...40...50...60...70...80...90...100 - done.
+
+real    0m22.608s
+user    0m38.246s
+sys     0m0.987s
+
+root@openeo-geotrellis-driver:/opt/spark/work-dir# time JP2KAK_THREADS=4 CPL_DEBUG=OFF gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /vsis3/eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out.tif
+Input file size is 10980, 10980
+0...10...20...30...40...50...60...70...80...90...100 - done.
+
+real    1m7.773s
+user    0m41.764s
+sys     0m1.418s
+
+root@openeo-geotrellis-driver:/opt/spark/work-dir# time JP2KAK_THREADS=1 CPL_DEBUG=OFF gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out.tif
+Input file size is 10980, 10980
+0...10...20...30...40...50...60...70...80...90...100 - done.
+
+real    0m29.366s
+user    0m38.265s
+sys     0m0.906s
+
+```
+
+### Conclusion
+Reading from mount is a significantly faster for reading with Kakadu. Need to compare with regular jp2 driver.
