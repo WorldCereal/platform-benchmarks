@@ -1,12 +1,3 @@
-"""
-
-prepare env:
-export OTB_APPLICATION_PATH=/opt/orfeo-toolbox/lib/otb/applications/
-export PYTHONPATH=/opt/orfeo-toolbox/lib/otb/python/
-export LD_LIBRARY_PATH=/opt/orfeo-toolbox/lib
-
-"""
-
 import logging
 import sys
 
@@ -17,19 +8,19 @@ TEST_FILE = "/eodata/Sentinel-1/SAR/GRD/2020/10/04/S1B_IW_GRDH_1SDV_20201004T060
 log = logging.getLogger("")
 
 
-def main(test_file=TEST_FILE, output_file="test11-out.tif"):
+def main(test_file=TEST_FILE, output_file="orfeo-test01.tiff"):
     logging.basicConfig(level=logging.INFO)
     log.info("test file {t}".format(t=test_file))
 
     extractROI = otb.Registry.CreateApplication("ExtractROI")
     log.info("extractRoi: {e}".format(e=extractROI))
+    # http://bboxfinder.com/#51.300000,3.150000,51.370000,3.250000
+    west, south, east, north = 3.15, 51.3, 3.25, 51.37
+    log.info("bbox {b}".format(b=(west, south, east, north)))
 
     extractROI.SetParameterString("in", test_file)
     extractROI.SetParameterString("mode", "extent")
     extractROI.SetParameterString("mode.extent.unit", "lonlat")
-    # http://bboxfinder.com/#51.300000,3.150000,51.370000,3.250000
-    west, south, east, north = 3.15, 51.3, 3.25, 51.37
-
     extractROI.SetParameterFloat("mode.extent.ulx", west)
     extractROI.SetParameterFloat("mode.extent.uly", south)
     extractROI.SetParameterFloat("mode.extent.lrx", east)
