@@ -1,6 +1,6 @@
 import logging
+import multiprocessing
 import pathlib
-import threading
 import time
 
 import otbApplication as otb
@@ -34,14 +34,14 @@ def process(input_file, output_file, bbox):
     log.info("process: done: {o} {b} {e}".format(o=output_file, b=bbox, e=end - start))
 
 
-class ProcessThread(threading.Thread):
+class ProcessingProcess(multiprocessing.Process):
     def __init__(self, input_file, bbox):
         super().__init__()
         self.input_file = input_file
         self.bbox = bbox
 
     def run(self):
-        output_file = basename + "-%.3f-%.3f-%.3f-%.3f.tiff" % self.bbox
+        output_file = basename + "-%.2f-%.2f-%.2f-%.2f.tiff" % self.bbox
         return process(input_file=self.input_file, output_file=output_file, bbox=self.bbox)
 
 
@@ -50,11 +50,11 @@ def main():
 
     input_file = "/eodata/Sentinel-1/SAR/GRD/2020/10/04/S1B_IW_GRDH_1SDV_20201004T060621_20201004T060646_023659_02CF3D_593D.SAFE/measurement/s1b-iw-grd-vh-20201004t060621-20201004t060646-023659-02cf3d-002.tiff"
 
-    log.info("Creating thread 1")
-    thread1 = ProcessThread(input_file=input_file, bbox=(3, 50, 4, 50.5))
+    log.info("Creating process 1")
+    thread1 = ProcessingProcess(input_file=input_file, bbox=(3, 50, 4, 50.5))
 
     log.info("Creating thread 2")
-    thread2 = ProcessThread(input_file=input_file, bbox=(3, 51, 4, 51.5))
+    thread2 = ProcessingProcess(input_file=input_file, bbox=(3, 51, 4, 51.5))
 
     log.info("Starting thead1")
     thread1.start()
@@ -66,8 +66,11 @@ def main():
 
     log.info("Join thead1")
     thread1.join()
+
     log.info("Join thread2")
     thread2.join()
+
+    log.info("All joined")
 
 
 if __name__ == '__main__':

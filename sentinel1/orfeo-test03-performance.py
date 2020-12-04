@@ -1,5 +1,6 @@
 import json
 import logging
+import pathlib
 import sys
 import time
 from pprint import pprint
@@ -9,7 +10,8 @@ import rasterio
 
 TEST_FILE = "/eodata/Sentinel-1/SAR/GRD/2020/10/04/S1B_IW_GRDH_1SDV_20201004T060621_20201004T060646_023659_02CF3D_593D.SAFE/measurement/s1b-iw-grd-vh-20201004t060621-20201004t060646-023659-02cf3d-002.tiff"
 
-log = logging.getLogger()
+basename = pathlib.Path(__file__).stem
+log = logging.getLogger(basename)
 
 
 def process(input_file, output_file, bbox):
@@ -79,7 +81,7 @@ def main():
 
     all_stats = []
     for bbox in bboxes:
-        output_file = "orfeo-test03-%.3f-%.3f-%.3f-%.3f.tiff" % bbox
+        output_file = basename + "-%.3f-%.3f-%.3f-%.3f.tiff" % bbox
         log.info("bbox {b} output file {o}".format(b=bbox, o=output_file))
 
         start = time.time()

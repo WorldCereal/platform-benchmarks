@@ -1,14 +1,16 @@
 import logging
+import pathlib
 import sys
 
 import otbApplication as otb
 
 TEST_FILE = "/eodata/Sentinel-1/SAR/GRD/2020/10/04/S1B_IW_GRDH_1SDV_20201004T060621_20201004T060646_023659_02CF3D_593D.SAFE/measurement/s1b-iw-grd-vh-20201004t060621-20201004t060646-023659-02cf3d-002.tiff"
 
-log = logging.getLogger()
+basename = pathlib.Path(__file__).stem
+log = logging.getLogger(basename)
 
 
-def main(test_file=TEST_FILE, output_file="orfeo-test02.tiff"):
+def main(test_file=TEST_FILE, output_file=basename + ".tiff"):
     logging.basicConfig(level=logging.INFO)
     log.info("test file {t}".format(t=test_file))
     # http://bboxfinder.com/#51.300000,3.150000,51.370000,3.250000
