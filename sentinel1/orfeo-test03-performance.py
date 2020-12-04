@@ -1,23 +1,25 @@
+import json
 import logging
 import sys
+import time
+from pprint import pprint
 
 import otbApplication as otb
+import rasterio
 
 TEST_FILE = "/eodata/Sentinel-1/SAR/GRD/2020/10/04/S1B_IW_GRDH_1SDV_20201004T060621_20201004T060646_023659_02CF3D_593D.SAFE/measurement/s1b-iw-grd-vh-20201004t060621-20201004t060646-023659-02cf3d-002.tiff"
 
-log = logging.getLogger("")
+log = logging.getLogger()
 
 
-def main(test_file=TEST_FILE, output_file="orfeo-test02.tiff"):
-    logging.basicConfig(level=logging.INFO)
-    log.info("test file {t}".format(t=test_file))
-    # http://bboxfinder.com/#51.300000,3.150000,51.370000,3.250000
-    west, south, east, north = 3.15, 51.3, 3.25, 51.37
-    log.info("bbox {b}".format(b=(west, south, east, north)))
+def process(input_file, output_file, bbox):
+    log.info("input file {t}".format(t=input_file))
+    log.info("bbox {b}".format(b=bbox))
+    west, south, east, north = bbox
 
     log.info("Setting up ExtractROI application")
     extractROI = otb.Registry.CreateApplication("ExtractROI")
-    extractROI.SetParameterString("in", test_file)
+    extractROI.SetParameterString("in", input_file)
     extractROI.SetParameterString("mode", "extent")
     extractROI.SetParameterString("mode.extent.unit", "lonlat")
     extractROI.SetParameterFloat("mode.extent.ulx", west)
@@ -51,7 +53,49 @@ def main(test_file=TEST_FILE, output_file="orfeo-test02.tiff"):
 
     log.info("ExecuteAndWriteOutput")
     OrthoRect.ExecuteAndWriteOutput()
+    return output_file
+
+
+def get_image_size(filename):
+    with rasterio.open(filename) as ds:
+        return ds.width, ds.height
+
+
+def main():
+    logging.basicConfig(level=logging.INFO)
+
+    input_file = TEST_FILE
+
+    west, south, east, north = 2, 50, 5, 52
+    N = 8
+    # west, south, east, north = 3, 50.5, 4, 51.5
+    # N = 3
+
+    bboxes = [
+        (west + u * (east - west), south + u * (north - south), east - u * (east - west), north - u * (north - south))
+        for u in [n / (2.0 * N) for n in range(N)]
+    ]
+    log.info("bounding boxes: {b}".format(b=bboxes))
+
+    all_stats = []
+    for bbox in bboxes:
+        output_file = "orfeo-test03-%.3f-%.3f-%.3f-%.3f.tiff" % bbox
+        log.info("bbox {b} output file {o}".format(b=bbox, o=output_file))
+
+        start = time.time()
+        process(input_file=input_file, output_file=output_file, bbox=bbox)
+        end = time.time()
+
+        elapsed = end - start
+        size = get_image_size(output_file)
+        stats = {"bbox": bbox, "size": size, "elapsed": elapsed}
+        print("stats", stats)
+        all_stats.append(stats)
+
+    print("All stats:")
+    pprint(all_stats)
+    json.dump(all_stats, fp=sys.stdout)
 
 
 if __name__ == '__main__':
-    main(*sys.argv[1:])
+    main()
