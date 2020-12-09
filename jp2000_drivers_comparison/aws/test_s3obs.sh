@@ -59,7 +59,7 @@ echo -n "KAK_1t_4c, OJP_1t_4c, KAK_2t_4c, OJP_2t_4c, KAK_4t_4c, OJP_4t_4c, " >> 
 #echo -n "KAK_1t_8c, OJP_1t_8c, KAK_1t_16c, OJP_1t_16c, " >> timings_s3obs.csv
 echo "dummy" >> timings_s3obs.csv
 
-for i in {1..100} ; do
+for i in {1..5} ; do
 
   # source file is 130MB for network speed
   # note the opposite driver needs to be passed in because that is the option which driver to blacklist
