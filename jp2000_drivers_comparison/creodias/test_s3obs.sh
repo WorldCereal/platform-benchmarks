@@ -1,15 +1,20 @@
 #!/bin/bash
 
 $1: sublogfilename
-$2: gdal_skip
-$3: threads
-$4: nconcurrent
+$2: use_driver
+$3: gdal_skip
+$4: threads
+$5: nconcurrent
 function measure_gdal_translate(){
 
   echo "$@"  
 
   logfile=$1
   echo -n "" > $logfile
+  shift
+
+  driver=$1
+  echo "DRIVER=$driver" >> $logfile
   shift
 
   export GDAL_SKIP=$1
@@ -26,14 +31,16 @@ function measure_gdal_translate(){
   shift
   echo "NUM_CONCURRENT_GDAL_TRANSLATES=$nconcurrent" >> $logfile
 
+  srcfile=/vsis3/eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2
+
   start=$(date +%s)
   for (( iproc=1; iproc<=$nconcurrent; iproc++ )) ; do  
     if (( "$iproc" == "$nconcurrent" )) ; then 
       echo "PROC $iproc REPORTS IN" >> $logfile
-      gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /vsis3/eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out_$iproc.tif >> $logfile 2>&1
+      gdal_translate -co BLOCKXSIZE=1024 -co BLOCKYSIZE=1024 -of $driver $srcfile out_$iproc.jp2 >> $logfile 2>&1
     else
       echo "PROC $iproc REPORTS IN" >> $logfile
-      gdal_translate -CO TILED=TRUE -CO COMPRESS=LZW /vsis3/eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2 out_$iproc.tif >> $logfile 2>&1 &
+      gdal_translate -co BLOCKXSIZE=1024 -co BLOCKYSIZE=1024 -of $driver $srcfile out_$iproc.jp2 >> $logfile 2>&1 &
     fi
   done
   end=$(date +%s)
@@ -53,32 +60,32 @@ for i in {1..100} ; do
 
   # source file is 130MB for network speed
   # note the opposite driver needs to be passed in because that is the option which driver to blacklist
-  measure_gdal_translate log_s3_kakadu_1thread_1concurrent.txt JP2OpenJPEG 1 1
-  measure_gdal_translate log_s3_openjp_1thread_1concurrent.txt JP2KAK      1 1
-  measure_gdal_translate log_s3_kakadu_2thread_1concurrent.txt JP2OpenJPEG 2 1
-  measure_gdal_translate log_s3_openjp_2thread_1concurrent.txt JP2KAK      2 1
-  measure_gdal_translate log_s3_kakadu_4thread_1concurrent.txt JP2OpenJPEG 4 1
-  measure_gdal_translate log_s3_openjp_4thread_1concurrent.txt JP2KAK      4 1
+  measure_gdal_translate log_s3_kakadu_1thread_1concurrent.txt JP2KAK      JP2OpenJPEG 1 1
+  measure_gdal_translate log_s3_openjp_1thread_1concurrent.txt JP2OpenJPEG JP2KAK      1 1
+  measure_gdal_translate log_s3_kakadu_2thread_1concurrent.txt JP2KAK      JP2OpenJPEG 2 1
+  measure_gdal_translate log_s3_openjp_2thread_1concurrent.txt JP2OpenJPEG JP2KAK      2 1
+  measure_gdal_translate log_s3_kakadu_4thread_1concurrent.txt JP2KAK      JP2OpenJPEG 4 1
+  measure_gdal_translate log_s3_openjp_4thread_1concurrent.txt JP2OpenJPEG JP2KAK      4 1
 
-  measure_gdal_translate log_s3_kakadu_1thread_2concurrent.txt JP2OpenJPEG 1 2
-  measure_gdal_translate log_s3_openjp_1thread_2concurrent.txt JP2KAK      1 2
-  measure_gdal_translate log_s3_kakadu_2thread_2concurrent.txt JP2OpenJPEG 2 2
-  measure_gdal_translate log_s3_openjp_2thread_2concurrent.txt JP2KAK      2 2
-  measure_gdal_translate log_s3_kakadu_4thread_2concurrent.txt JP2OpenJPEG 4 2
-  measure_gdal_translate log_s3_openjp_4thread_2concurrent.txt JP2KAK      4 2
+  measure_gdal_translate log_s3_kakadu_1thread_2concurrent.txt JP2KAK      JP2OpenJPEG 1 2
+  measure_gdal_translate log_s3_openjp_1thread_2concurrent.txt JP2OpenJPEG JP2KAK      1 2
+  measure_gdal_translate log_s3_kakadu_2thread_2concurrent.txt JP2KAK      JP2OpenJPEG 2 2
+  measure_gdal_translate log_s3_openjp_2thread_2concurrent.txt JP2OpenJPEG JP2KAK      2 2
+  measure_gdal_translate log_s3_kakadu_4thread_2concurrent.txt JP2KAK      JP2OpenJPEG 4 2
+  measure_gdal_translate log_s3_openjp_4thread_2concurrent.txt JP2OpenJPEG JP2KAK      4 2
 
-  measure_gdal_translate log_s3_kakadu_1thread_4concurrent.txt JP2OpenJPEG 1 4
-  measure_gdal_translate log_s3_openjp_1thread_4concurrent.txt JP2KAK      1 4
-  measure_gdal_translate log_s3_kakadu_2thread_4concurrent.txt JP2OpenJPEG 2 4
-  measure_gdal_translate log_s3_openjp_2thread_4concurrent.txt JP2KAK      2 4
-  measure_gdal_translate log_s3_kakadu_4thread_4concurrent.txt JP2OpenJPEG 4 4
-  measure_gdal_translate log_s3_openjp_4thread_4concurrent.txt JP2KAK      4 4
+  measure_gdal_translate log_s3_kakadu_1thread_4concurrent.txt JP2KAK      JP2OpenJPEG 1 4
+  measure_gdal_translate log_s3_openjp_1thread_4concurrent.txt JP2OpenJPEG JP2KAK      1 4
+  measure_gdal_translate log_s3_kakadu_2thread_4concurrent.txt JP2KAK      JP2OpenJPEG 2 4
+  measure_gdal_translate log_s3_openjp_2thread_4concurrent.txt JP2OpenJPEG JP2KAK      2 4
+  measure_gdal_translate log_s3_kakadu_4thread_4concurrent.txt JP2KAK      JP2OpenJPEG 4 4
+  measure_gdal_translate log_s3_openjp_4thread_4concurrent.txt JP2OpenJPEG JP2KAK      4 4
 
 # THIS BREAKS THE MOUNT
-#  measure_gdal_translate log_s3_kakadu_1thread_8concurrent.txt JP2OpenJPEG 1 8
-#  measure_gdal_translate log_s3_openjp_1thread_8concurrent.txt JP2KAK      1 8
-#  measure_gdal_translate log_s3_kakadu_2thread_16concurrent.txt JP2OpenJPEG 2 16
-#  measure_gdal_translate log_s3_openjp_2thread_16concurrent.txt JP2KAK      2 16
+#  measure_gdal_translate log_s3_kakadu_1thread_8concurrent.txt JP2KAK      JP2OpenJPEG 1 8
+#  measure_gdal_translate log_s3_openjp_1thread_8concurrent.txt JP2OpenJPEG JP2KAK      1 8
+#  measure_gdal_translate log_s3_kakadu_2thread_16concurrent.txt JP2KAK      JP2OpenJPEG 2 16
+#  measure_gdal_translate log_s3_openjp_2thread_16concurrent.txt JP2OpenJPEG JP2KAK      2 16
 
   echo "-1" >> timings_s3obs.csv
 
