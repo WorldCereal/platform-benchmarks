@@ -245,5 +245,6 @@ Todo:
 
 * Check bandwidth saturation/more concurrency on bigger instances
 * What happens when attaching more network interfaces
+* Check concurrent writes interact with each other (should not matter: output files are ~50MB and low-end HDD does 100MB/s -> takes 20-40s -> compression/CPU dominant)
 
 
