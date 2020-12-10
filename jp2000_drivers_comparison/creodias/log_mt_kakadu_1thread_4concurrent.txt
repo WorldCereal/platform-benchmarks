@@ -1,0 +1,18 @@
+DRIVER=JP2KAK
+GDAL_NUM_THREADS=1
+JP2KAK_THREADS=1
+GDAL_SKIP=JP2OpenJPEG
+NUM_CONCURRENT_GDAL_TRANSLATES=4
+PROC 1 REPORTS IN
+PROC 2 REPORTS IN
+PROC 3 REPORTS IN
+PROC 4 REPORTS IN
+Input file size is 10980, 10980
+0.Input file size is 10980, 10980
+0.Input file size is 10980, 10980
+0Input file size is 10980, 10980
+0.....10......10.1010....20........2020.20..30.........3030.30...40........404040....50........505050....60........606060...70.........7070.70..80.........8080.80.90..........90.9090..100 - done.
+.......100 - done.
+FINISHED IN 56 SECONDS
+100 - done.
+100 - done.

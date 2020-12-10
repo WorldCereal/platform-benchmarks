@@ -9,6 +9,9 @@ function measure_gdal_translate(){
 
   echo "$@"  
 
+  #export AWS_REQUEST_PAYER=requester
+  CPL_DEBUG=OFF
+
   logfile=$1
   echo -n "" > $logfile
   shift
@@ -32,6 +35,7 @@ function measure_gdal_translate(){
   echo "NUM_CONCURRENT_GDAL_TRANSLATES=$nconcurrent" >> $logfile
 
   srcfile=/vsis3/eodata/Sentinel-2/MSI/L2A/2019/01/01/S2A_MSIL2A_20190101T082331_N0211_R121_T36SYC_20190101T094029.SAFE/GRANULE/L2A_T36SYC_A018422_20190101T082935/IMG_DATA/R10m/T36SYC_20190101T082331_B02_10m.jp2
+  #srcfile=/vsis3/sentinel-s2-l2a/tiles/36/S/YC/2018/1/11/0/R10m/B02.jp2
 
   start=$(date +%s)
   for (( iproc=1; iproc<=$nconcurrent; iproc++ )) ; do  
@@ -56,12 +60,13 @@ echo -n "KAK_1t_4c, OJP_1t_4c, KAK_2t_4c, OJP_2t_4c, KAK_4t_4c, OJP_4t_4c, " >> 
 #echo -n "KAK_1t_8c, OJP_1t_8c, KAK_1t_16c, OJP_1t_16c, " >> timings_s3obs.csv
 echo "dummy" >> timings_s3obs.csv
 
-for i in {1..100} ; do
+for i in {1..2} ; do
 
   # source file is 130MB for network speed
   # note the opposite driver needs to be passed in because that is the option which driver to blacklist
   measure_gdal_translate log_s3_kakadu_1thread_1concurrent.txt JP2KAK      JP2OpenJPEG 1 1
   measure_gdal_translate log_s3_openjp_1thread_1concurrent.txt JP2OpenJPEG JP2KAK      1 1
+
   measure_gdal_translate log_s3_kakadu_2thread_1concurrent.txt JP2KAK      JP2OpenJPEG 2 1
   measure_gdal_translate log_s3_openjp_2thread_1concurrent.txt JP2OpenJPEG JP2KAK      2 1
   measure_gdal_translate log_s3_kakadu_4thread_1concurrent.txt JP2KAK      JP2OpenJPEG 4 1

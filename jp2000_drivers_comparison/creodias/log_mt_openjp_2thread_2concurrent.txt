@@ -8,5 +8,5 @@ PROC 2 REPORTS IN
 Input file size is 10980, 10980
 0Input file size is 10980, 10980
 0......1010......2020......3030......4040......5050......6060......7070......8080......9090......100 - done.
+FINISHED IN 60 SECONDS
 100 - done.
-FINISHED IN 68 SECONDS

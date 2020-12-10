@@ -85,12 +85,6 @@ for i in {1..5} ; do
   measure_gdal_translate log_s3_kakadu_4thread_4concurrent.txt JP2KAK      JP2OpenJPEG 4 4
   measure_gdal_translate log_s3_openjp_4thread_4concurrent.txt JP2OpenJPEG JP2KAK      4 4
 
-# THIS BREAKS THE MOUNT
-#  measure_gdal_translate log_s3_kakadu_1thread_8concurrent.txt JP2KAK      JP2OpenJPEG 1 8
-#  measure_gdal_translate log_s3_openjp_1thread_8concurrent.txt JP2OpenJPEG JP2KAK      1 8
-#  measure_gdal_translate log_s3_kakadu_2thread_16concurrent.txt JP2KAK      JP2OpenJPEG 2 16
-#  measure_gdal_translate log_s3_openjp_2thread_16concurrent.txt JP2OpenJPEG JP2KAK      2 16
-
   echo "-1" >> timings_s3obs.csv
 
 done

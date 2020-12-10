@@ -93,5 +93,7 @@ Three consecutive runs gave consistent results both for Kakadu (JP2KAK):
    * Since in this case processing is virtually just providing numpy arrays through GDAL, it is believed that this difference is negligible during a real scenario (when business logic incurs CPU load GDAL).  
  * Writing: JP2KAK is consistently 2x faster, however both drivers implement serial save.
  
- 
+## Performance on CreoDIAS
+
+
  
