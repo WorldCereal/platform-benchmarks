@@ -1,0 +1,6 @@
+KAK_MIN_1t_1c, KAK_MAX_1t_1c, KAK_MIN_2t_1c, KAK_MAX_2t_1c, KAK_MIN_4t_1c, KAK_MAX_4t_1c, KAK_MIN_1t_2c, KAK_MAX_1t_2c, KAK_MIN_2t_2c, KAK_MAX_2t_2c, KAK_MIN_4t_2c, KAK_MAX_4t_2c, KAK_MIN_1t_4c, KAK_MAX_1t_4c, KAK_MIN_2t_4c, KAK_MAX_2t_4c, KAK_MIN_4t_4c, KAK_MAX_4t_4c, dummy
+25, 13, 7, 25, 13, 13, 26, 26, 26, -1
+25, 13, 7, 25, 13, 14, 26, 25, 26, -1
+25, 12, 7, 25, 14, 13, 26, 25, 26, -1
+25, 13, 8, 25, 13, 13, 27, 26, 26, -1
+25, 13, 7, 24, 14, 13, 26, 26, 25, -1

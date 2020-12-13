@@ -1,0 +1,20 @@
+GDAL_NUM_THREADS=1
+JP2KAK_THREADS=1
+NUM_CONCURRENT_kdu_expandS=4
+PROC 1 REPORTS IN
+PROC 2 REPORTS IN
+PROC 3 REPORTS IN
+PROC 4 REPORTS IN
+    Processing time = 25.230687 s;
+       i.e., 4.778324 Msamples/s
+    End-to-end time (including file writing) = 25.230687 s.
+    Processing time = 25.233997 s;
+       i.e., 4.777697 Msamples/s
+    End-to-end time (including file writing) = 25.233997 s.
+    Processing time = 25.255126 s;
+       i.e., 4.773700 Msamples/s
+    End-to-end time (including file writing) = 25.255126 s.
+    Processing time = 26.393624 s;
+       i.e., 4.567785 Msamples/s
+    End-to-end time (including file writing) = 26.393624 s.
+FINISHED IN 27 SECONDS

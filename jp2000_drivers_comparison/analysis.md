@@ -7,7 +7,7 @@ The report is broken into three different performance analises:
 
 * using files from a local hard drive
 * using a collection on CreoDIAS
-* using SentinelHub on Amazon AWS
+* using SentinelHub's S3 bucket on Amazon AWS
 
 Global conditions:
 
@@ -19,8 +19,8 @@ Global conditions:
 
 For this purpose a stripped down NDVI calculator was borrowed:
 
-* simple Python code, uses gdal directly
-* NDVI code is replaced by simple calculation of returning half of the source image 
+* simple Python code that uses gdal directly, which then wraps Kakadu (JP2KAK) and OpenJpeg (JP2openJPEG) drivers
+* NDVI code is replaced by simple multiplication by 0.5 
 * timings were separately measured for read/process/write
 * read/write is aligned with the block size
 * Kakadu writer is forced to use the same block sizes as the input (did not have noticable effect at the end)
@@ -67,8 +67,14 @@ Two ways of accessing data was investigated:
 
 * access object storage via S3 protocol (using /vsis3)
 * access the same data through a fuse.s3fs mount
-* source data was from CreoDIAS's own collection
 
+with different aproaches:
+
+* Python pre-tests to measure write and compute times
+* gdal_translate calls (corrected by the Python pre-tests) wrapping Kakadu and OpenJpeg
+* kdu\_buffered\_expand calls (standalone Kakadu)
+
+Source data was from CreoDIAS's internal sentinel-2 L2A collection.
 The timing of gdal_translate commands were measured and corrected by the results of the python measurements.
 The permustaions of using 1,2,4 theads and 1,2,4 consurrent gdal_translate calls were investigated.
 
@@ -140,8 +146,7 @@ As mentioned before, permustaions of using multiple threads and consurrent calls
 
 * [0-9]t: number of threads
 * [0-9]c: concurrent gdal calls
-
-JP2KAK:
+* OJP==JP2OpenJPEG and JP2KAK==Kakadu
 
 	KAK_1t_1c, OJP_1t_1c, KAK_2t_1c, OJP_2t_1c, KAK_4t_1c, OJP_4t_1c, KAK_1t_2c, OJP_1t_2c, KAK_2t_2c, OJP_2t_2c, KAK_4t_2c, OJP_4t_2c, KAK_1t_4c, OJP_1t_4c, KAK_2t_4c, OJP_2t_4c, KAK_4t_4c, OJP_4t_4c, dummy
 	38, 72, 35, 60, 34, 56, 39, 73, 36, 62, 39, 59, 56, 77, 56, 77, 54, 78, -1
@@ -150,7 +155,9 @@ JP2KAK:
 	39, 71, 35, 60, 34, 55, 46, 74, 41, 64, 42, 62, 60, 77, 56, 75, 56, 75, -1
 	39, 72, 35, 59, 34, 54, 39, 72, 38, 62, 38, 60, 56, 75, 53, 75, 57, 75, -1
 
-JP2OpenJPEG:
+### gdal_translate comparison from S3 bucket
+
+The same methodology as the previous section except that the same source file was accesed via S3 protocol (using /vsis3/...).
 
 	KAK_1t_1c, OJP_1t_1c, KAK_2t_1c, OJP_2t_1c, KAK_4t_1c, OJP_4t_1c, KAK_1t_2c, OJP_1t_2c, KAK_2t_2c, OJP_2t_2c, KAK_4t_2c, OJP_4t_2c, KAK_1t_4c, OJP_1t_4c, KAK_2t_4c, OJP_2t_4c, KAK_4t_4c, OJP_4t_4c, dummy
 	47, 80, 42, 69, 40, 62, 50, 80, 44, 71, 45, 68, 58, 88, 59, 83, 57, 82, -1
@@ -159,28 +166,41 @@ JP2OpenJPEG:
 	44, 77, 40, 76, 43, 60, 43, 81, 41, 71, 43, 67, 57, 84, 56, 80, 57, 89, -1
 	43, 80, 40, 66, 41, 62, 44, 80, 42, 83, 43, 78, 57, 84, 56, 98, 60, 80, -1
 
+### kdu\_buffered\_expand comparison from mount
+
+Kakadu's own standalone executable was also tested similar to the previous section. 
+This was only performed from using the mount.
+
+	KAK_1t_1c, KAK_2t_1c, KAK_4t_1c, KAK_1t_2c, KAK_2t_2c, KAK_4t_2c, KAK_1t_4c, KAK_2t_4c, KAK_4t_4c, dummy
+	25, 13, 7, 25, 13, 13, 26, 26, 26, -1
+	25, 13, 7, 25, 13, 14, 26, 25, 26, -1
+	25, 12, 7, 25, 14, 13, 26, 25, 26, -1
+	25, 13, 8, 25, 13, 13, 27, 26, 26, -1
+	25, 13, 7, 24, 14, 13, 26, 26, 25, -1
+
 ### Intepretation
 
 By substrating the respective write times and taking average:
 
 Method|KAK_1t_1c|OJP_1t_1c|KAK_2t_1c|OJP_2t_1c|KAK_4t_1c|OJP_4t_1c|KAK_1t_2c|OJP_1t_2c|KAK_2t_2c|OJP_2t_2c|KAK_4t_2c|OJP_4t_2c|KAK_1t_4c|OJP_1t_4c|KAK_2t_4c|OJP_2t_4c|KAK_4t_4c|OJP_4t_4c
 ---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---
-mount|18|31|14.2|19.2|13.4|14.2|20.4|32|17.2|20.6|18|19.4|35.8|35.8|33.8|35|34.8|35.4
-s3|26.2|39|19.4|30.8|20.2|22.6|24.6|42.8|22.6|34.8|23.8|29.2|37.4|46.8|37|46.4|37|42.4
+mount/GDAL|18|31|14.2|19.2|13.4|14.2|20.4|32|17.2|20.6|18|19.4|35.8|35.8|33.8|35|34.8|35.4
+s3/GDAL|26.2|39|19.4|30.8|20.2|22.6|24.6|42.8|22.6|34.8|23.8|29.2|37.4|46.8|37|46.4|37|42.4
+mount/Kakadu|25.0|-|12.8|-|7.2|-|24.8|-|13.4|-|13.2|-|26.2|-|25.6|-|25.8|-
 
 These are the approximate read times. Interpretation:
 
+* Kakadu standalone is the fastest, except when serial (1t/1c case)
+* Kakadu standalone scales linearly until all the available threads are used up
 * reading from mount is always faster
-* JP2KAK is always faster, however at high concurrency scenarios the performances converge to each other. It is believed to be the saturation of the network bandwidth.
+* GDAL/JP2KAK is always faster then GDAL/JP2OpenJPEG, however at high concurrency scenarios the performances converge to each other. It is believed to be the saturation of the network bandwidth
 
-Note 1.: on Creo it seems to be very important to control the number of threads being used.
-
-Note 2.: although the mount approach looks more advantegous, but it can be easily overloaded (by experience using 8 or more concurrent executions). 
+Note: although the mount approach looks more advantegous, it can be easily overloaded (by experience using 8 or more concurrent executions). 
 In that case the mount freezes indefinitely. With S3 approach this was tested up to 32 concurrent processes and it proved stable (but increasingly slow of course).
 
-## Performance measurements on CreoDIAS
+## Performance measurements on Amazon AWS
 
-The same techniques was used as for Creo, except only S3 access was investigated.
+The same techniques was used as for CreoDIAS, except only S3 access was investigated.
 
 Source data was from Sinergise S3 buckets, accessing from an instance in the same region (EU-1 Frankfurt).
 
@@ -227,19 +247,21 @@ Interpretation:
 
 ## Summary
 
-Putting the the timings of the read operations (pulling the same jpeg-2000 image from Sentinel-2 collection on different clouds) together:
+Putting the timings of the read operations (pulling a jpeg-2000 image from Sentinel-2 collection on different clouds) together:
 
 Method|KAK_1t_1c|OJP_1t_1c|KAK_2t_1c|OJP_2t_1c|KAK_4t_1c|OJP_4t_1c|KAK_1t_2c|OJP_1t_2c|KAK_2t_2c|OJP_2t_2c|KAK_4t_2c|OJP_4t_2c|KAK_1t_4c|OJP_1t_4c|KAK_2t_4c|OJP_2t_4c|KAK_4t_4c|OJP_4t_4c
 ---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---
-Creo/mount|18|31|14.2|19.2|13.4|14.2|20.4|32|17.2|20.6|18|19.4|35.8|35.8|33.8|35|34.8|35.4
-Creo/S3|26.2|39|19.4|30.8|20.2|22.6|24.6|42.8|22.6|34.8|23.8|29.2|37.4|46.8|37|46.4|37|42.4
-AWS/S3|16.4|28.8|14.6|18.8|14|15.4|20|29.6|19|23|19.8|21.2|41|51|41|49.8|41.8|50
+Creo/mount/GDAL|18|31|14.2|19.2|13.4|14.2|20.4|32|17.2|20.6|18|19.4|35.8|35.8|33.8|35|34.8|35.4
+Creo/S3/GDAL|26.2|39|19.4|30.8|20.2|22.6|24.6|42.8|22.6|34.8|23.8|29.2|37.4|46.8|37|46.4|37|42.4
+AWS/S3/GDAL|16.4|28.8|14.6|18.8|14|15.4|20|29.6|19|23|19.8|21.2|41|51|41|49.8|41.8|50
+Creo/mount/Kakadu|25.0|-|12.8|-|7.2|-|24.8|-|13.4|-|13.2|-|26.2|-|25.6|-|25.8|-
 
 Interpretation:
 
+* Standalone Kakadu is the fastest on CreoDIAS, except the 1t/1c case
 * AWS S3 is in par with Creo mount, sometimes higher, sometimes lower 
 * CreoDIAS S3 is very slow, probable reason: CreoDIAS uses an older SWIFT backend to serve S3
-* Kakadu seems to be faster when using one thread per core, however JP2OpenJPEG is better parallelized for multithreading.
+* JP2KAK seems to be faster when using one thread per core, however JP2OpenJPEG is better parallelized for multithreading.
 
 Todo:
 

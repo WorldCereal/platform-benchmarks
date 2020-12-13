@@ -1,0 +1,24 @@
+GDAL_NUM_THREADS=4
+JP2KAK_THREADS=4
+NUM_CONCURRENT_kdu_expandS=4
+PROC 1 REPORTS IN
+PROC 2 REPORTS IN
+PROC 3 REPORTS IN
+PROC 4 REPORTS IN
+    End-to-end time (including file writing) = 25.311002 s;
+       i.e., 4.763162 Msamples/s
+    Processed using the multi-threaded environment, with
+        4 parallel threads of execution (see `-num_threads')
+    End-to-end time (including file writing) = 26.069618 s;
+       i.e., 4.624556 Msamples/s
+    Processed using the multi-threaded environment, with
+        4 parallel threads of execution (see `-num_threads')
+    End-to-end time (including file writing) = 26.117136 s;
+       i.e., 4.616142 Msamples/s
+    Processed using the multi-threaded environment, with
+        4 parallel threads of execution (see `-num_threads')
+    End-to-end time (including file writing) = 26.234434 s;
+       i.e., 4.595502 Msamples/s
+    Processed using the multi-threaded environment, with
+        4 parallel threads of execution (see `-num_threads')
+FINISHED IN 26 SECONDS

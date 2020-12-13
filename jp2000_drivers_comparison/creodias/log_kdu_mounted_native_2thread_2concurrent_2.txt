@@ -1,0 +1,14 @@
+GDAL_NUM_THREADS=2
+JP2KAK_THREADS=2
+NUM_CONCURRENT_kdu_expandS=2
+PROC 1 REPORTS IN
+PROC 2 REPORTS IN
+    End-to-end time (including file writing) = 12.716216 s;
+       i.e., 9.480839 Msamples/s
+    Processed using the multi-threaded environment, with
+        2 parallel threads of execution (see `-num_threads')
+    End-to-end time (including file writing) = 12.758763 s;
+       i.e., 9.449223 Msamples/s
+    Processed using the multi-threaded environment, with
+        2 parallel threads of execution (see `-num_threads')
+FINISHED IN 13 SECONDS
