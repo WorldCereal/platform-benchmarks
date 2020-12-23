@@ -270,3 +270,16 @@ Todo:
 * Check concurrent writes interact with each other (should not matter: output files are ~50MB and low-end HDD does 100MB/s -> takes 20-40s -> compression/CPU dominant)
 
 
+# Performance of reading a remote JP2 file
+
+We can also try to read a file in remote object storage locally. Using same gdal_translate:
+    
+    driesj@P199015> time AWS_REQUEST_PAYER=requester GDAL_NUM_THREADS=2 gdal_translate -co COMPRESS=LZW  /vsis3/sentinel-s2-l2a/tiles/36/S/YC/2018/1/11/0/R10m/B02.jp2 out.tif
+    Input file size is 10980, 10980
+    0...10...20...30...40...50...60...70...80...90...100 - done.
+    AWS_REQUEST_PAYER=requester GDAL_NUM_THREADS=2 gdal_translate -co COMPRESS=LZ  53,46s user 2,40s system 80% cpu 1:09,64 total
+    driesj@P199015> ls -lh out.tif
+    -rw-r--r-- 1 driesj driesj 283M 23 dec 11:21 out.tif
+
+Now it takes about one minute, where we were seeing timings around 20 seconds before. Reading COG's from us-west seemed even slower, probably due to network latency.
+
